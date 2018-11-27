@@ -10,12 +10,35 @@ import Foundation
 
 
 class MatchMe{
+    /*ATRIBUTES*/
+    private(set) var cards = [Card]()
     
-    var cards = [Card]()
-    var oneCardFaceUp: Int?
+    private var oneCardFaceUp: Int? {
+        get { 
+            var foundIndex: Int?
+            for index in cards.indices {
+                if cards[index].isFaceUp{
+                    if foundIndex == nil{
+                        foundIndex = index
+                    }else{
+                        return nil
+                    }
+                }
+            }
+            return foundIndex
+        }
+        set{
+            for index in cards.indices {
+                cards[index].isFaceUp = (index == newValue)
+            }
+        }
+    }
+    
     var score: Int = 0
     
+    /*INITIALIZER*/
     init(numberOfPairsOfCards: Int){
+        assert(numberOfPairsOfCards > 0, "MatchMe.init(\(numberOfPairsOfCards)): less than zero initializer")
         var deck = [Card]()
         for _ in 1...numberOfPairsOfCards{
             let card = Card()
@@ -29,6 +52,7 @@ class MatchMe{
         }
     }
     
+    /*METHODS*/
     func getTheme() -> [String]{
         let randTheme = Int(arc4random_uniform(UInt32(3)))
         switch randTheme {
@@ -49,24 +73,20 @@ class MatchMe{
     }
     
     func chooseCard(at index: Int){
+        assert(cards.indices.contains(index), "Concentration.chooseCard(at:\(index)): chosen index not in cards")
         if !cards[index].isMatched{
             if let matchIndex = oneCardFaceUp, matchIndex != index{
                 // check if cards match
                 if cards[matchIndex].identifier == cards[index].identifier {
                     cards[matchIndex].isMatched = true
-                    cards[index].isMatched = true
+                    cards[index].isMatched = true 
                     score += 2
                 }else{
                     score -= 1
                 }
                 cards[index].isFaceUp = true
-                oneCardFaceUp = nil
             }else{
                 //either no cards or 2 cards are face up
-                for flipDownIndex in cards.indices{
-                    cards[flipDownIndex].isFaceUp = false
-                }
-                cards[index].isFaceUp = true
                 oneCardFaceUp = index
             }
         }
